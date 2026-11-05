@@ -43,7 +43,7 @@ flowchart TD
 ## Project Structure
 
 ```text
-askmydocs-backend/
+askmydocs/
 ├── app/
 │   ├── __init__.py
 │   ├── config.py
