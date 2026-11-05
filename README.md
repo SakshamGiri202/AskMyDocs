@@ -1,4 +1,5 @@
- AskMyDocs (Domain-Specific RAG Engine)
+# AskMyDocs (Domain-Specific RAG Engine)
+
 
 AskMyDocs is a domain-specific Retrieval-Augmented Generation (RAG) system built with Python, FastAPI, PostgreSQL (`pgvector`), OpenSearch, and LangChain. It implements a hybrid retrieval pipeline (Dense Vector + Sparse BM25) combined with Reciprocal Rank Fusion (RRF) and Cross-Encoder reranking to ensure source-grounded answers with verifiable inline citations.
 
