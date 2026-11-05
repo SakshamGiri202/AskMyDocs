@@ -1,0 +1,67 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: askmydocs_api
+    ports:
+      - "8000:8000"
+    environment:
+      - POSTGRES_USER=askmydocs_user
+      - POSTGRES_PASSWORD=askmydocs_pass
+      - POSTGRES_DB=askmydocs
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+      - OPENSEARCH_HOST=opensearch
+      - OPENSEARCH_PORT=9200
+    depends_on:
+      db:
+        condition: service_healthy
+      opensearch:
+        condition: service_healthy
+
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: askmydocs_db
+    environment:
+      POSTGRES_USER: askmydocs_user
+      POSTGRES_PASSWORD: askmydocs_pass
+      POSTGRES_DB: askmydocs
+    ports:
+      # bound to loopback only: DB credentials must not leave the host
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U askmydocs_user -d askmydocs"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  opensearch:
+    image: opensearchproject/opensearch:2.11.0
+    container_name: askmydocs_opensearch
+    environment:
+      - discovery.type=single-node
+      - plugins.security.disabled=true
+      # keep JVM heap small so single-node dev startup succeeds on modest hosts
+      - OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m
+    ports:
+      # bound to loopback only: security plugin is disabled locally
+      - "127.0.0.1:9200:9200"
+    volumes:
+      - opensearchdata:/usr/share/opensearch/data
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9200/_cluster/health?wait_for_status=yellow || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+
+volumes:
+  pgdata:
+  opensearchdata:
